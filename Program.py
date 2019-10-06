@@ -3,4 +3,4 @@ class Program:
     instructions = []
     runtime = 0
     memory = 0
-    threads = 0
+    number_of_processes = 0
