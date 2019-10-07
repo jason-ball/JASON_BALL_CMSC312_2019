@@ -1,0 +1,14 @@
+Name: Web Browser
+Total runtime: 38
+Memory: 64
+
+CALCULATE 33
+I/O 48
+I/O 89
+CALCULATE 5
+YIELD
+OUT
+I/O 88
+I/O 23
+OUT
+EXE
