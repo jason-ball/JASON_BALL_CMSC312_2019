@@ -10,16 +10,18 @@ class Process:
     done = False
     lock = None
     dispatcher = None
+    scheduler_lock = None
+    pcb = None
 
     def task(self):
         self.lock.wait()
         for instruction in self.program.instructions:
             if instruction.command == 'CALCULATE':
-                calculate(instruction.value, 0.1, self.lock, self.pid)
+                calculate(instruction.value, 0.01, self.lock, self.pid)
             elif instruction.command == 'I/O':
-                io(self.lock, self.pid, self.dispatcher)
+                io(self.lock, self.pid, self.dispatcher, self.scheduler_lock, self.pcb)
             elif instruction.command == 'YIELD':
-                yield_from(self.lock, self.pid)
+                yield_from(self.lock, self.pid, self.scheduler_lock)
             elif instruction.command == 'OUT':
                 out(self, self.lock, self.pid)
             else:
