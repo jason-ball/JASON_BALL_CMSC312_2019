@@ -4,8 +4,10 @@ class Dispatcher:
     def switch(self, pcb):
         if self.active_pcb is not None:
             self.active_pcb.process.lock.clear()
+            self.active_pcb.dispatcher = None
             self.active_pcb.state = 'READY'
         self.active_pcb = pcb
+        self.active_pcb.dispatcher = self
         self.active_pcb.process.lock.set()
         self.active_pcb.state = 'RUN'
 
@@ -13,3 +15,7 @@ class Dispatcher:
         if self.active_pcb is not None:
             self.active_pcb.process.lock.clear()
             self.active_pcb = None
+
+    def block(self):
+        self.active_pcb.state = 'WAIT'
+        self.active_pcb.process.lock.clear()
