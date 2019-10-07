@@ -18,8 +18,9 @@ class Scheduler:
         while True:
             self.PCBs[:] = [pcb for pcb in self.PCBs if not pcb.process.done]
             for pcb in self.PCBs:
-                self.dispatcher.switch(pcb)
-                time.sleep(2)
+                if pcb.state == 'READY':
+                    self.dispatcher.switch(pcb)
+                    time.sleep(2)
             if len(self.PCBs) == 0:
                 break
 
