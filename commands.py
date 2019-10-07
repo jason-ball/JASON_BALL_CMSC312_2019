@@ -9,18 +9,22 @@ def calculate(count, delay, lock, pid):
         lock.wait()
 
 
-def io(lock, pid, dispatcher):
+def io(lock, pid, dispatcher, scheduler_lock, pcb):
     value = random.randint(0, 10)
     print(f'{pid}-> I/O: waiting for {value} seconds')
     if dispatcher is not None:
         dispatcher.block()
+    scheduler_lock.set()
     time.sleep(value)
+    if pcb is not None:
+        pcb.state = 'READY'
     lock.wait()
 
 
-def yield_from(lock, pid):
-    lock.set()
+def yield_from(lock, pid, scheduler_lock):
     print(f'{pid}-> YIELD')
+    scheduler_lock.set()
+    # lock.clear()
     lock.wait()
 
 
