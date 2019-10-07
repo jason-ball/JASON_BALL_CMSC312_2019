@@ -1,5 +1,6 @@
 import threading
 import time
+from commands import calculate, io, yield_from, out
 
 
 class Process:
@@ -8,13 +9,22 @@ class Process:
     started = False
     done = False
     lock = None
+    dispatcher = None
 
     def task(self):
         self.lock.wait()
         for instruction in self.program.instructions:
-            print(f'{self.pid}-> {instruction.command}: {instruction.value}')
-            time.sleep(0.5)
-            self.lock.wait()
+            if instruction.command == 'CALCULATE':
+                calculate(instruction.value, 0.1, self.lock, self.pid)
+            elif instruction.command == 'I/O':
+                io(self.lock, self.pid, self.dispatcher)
+            elif instruction.command == 'YIELD':
+                yield_from(self.lock, self.pid)
+            elif instruction.command == 'OUT':
+                out(self, self.lock, self.pid)
+            else:
+                print(f'Invalid command: {instruction.command}')
+                self.lock.wait()
         self.done = True
         print(f'---{self.pid}: DONE---')
 
