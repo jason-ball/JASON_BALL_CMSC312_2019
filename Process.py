@@ -7,13 +7,14 @@ class Process:
     active = False
     started = False
     done = False
-    lock = threading.Event()
+    lock = None
 
     def task(self):
+        self.lock.wait()
         for instruction in self.program.instructions:
-            self.lock.wait()
             print(f'{self.pid}-> {instruction.command}: {instruction.value}')
-            time.sleep(1)
+            time.sleep(0.5)
+            self.lock.wait()
         self.done = True
         print(f'---{self.pid}: DONE---')
 
@@ -21,6 +22,7 @@ class Process:
         self.program = program
         self.pid = pid
         self.thread = threading.Thread(target=self.task)
+        self.lock = threading.Event()
 
     def start(self):
         self.thread.start()
