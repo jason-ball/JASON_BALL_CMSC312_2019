@@ -28,6 +28,13 @@ def yield_from(lock, pid, scheduler_lock):
     lock.wait()
 
 
+def continue_from(lock, pid, scheduler_lock):
+    # print(f'{pid}-> YIELD')
+    scheduler_lock.set()
+    # lock.clear()
+    lock.wait()
+
+
 def out(process, lock, pid):
     print(f'--------OUT: PROCESS {pid}--------')
     print(f'Program Name: {process.program.name}')
