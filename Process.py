@@ -1,6 +1,7 @@
 import threading
 import time
-from commands import calculate, io, yield_from, out
+from commands import calculate, io, yield_from, out, continue_from
+import tables
 
 
 class Process:
@@ -12,21 +13,60 @@ class Process:
     dispatcher = None
     scheduler_lock = None
     pcb = None
+    has_cs = False
+    is_waiting_for_cs = False
+    sleeping = False
 
     def task(self):
         self.lock.wait()
-        for instruction in self.program.instructions:
-            if instruction.command == 'CALCULATE':
+        instruction_iterator = iter(self.program.instructions)
+        instruction = next(instruction_iterator)
+        while True:
+            if instruction == None:
+                break
+            elif instruction.command == 'CALCULATE':
                 calculate(instruction.value, 0.01, self.lock, self.pid)
+                instruction = advance(instruction_iterator)
             elif instruction.command == 'I/O':
-                io(self.lock, self.pid, self.dispatcher, self.scheduler_lock, self.pcb)
+                io(self, self.lock, self.pid, self.dispatcher, self.scheduler_lock, self.pcb)
+                instruction = advance(instruction_iterator)
             elif instruction.command == 'YIELD':
                 yield_from(self.lock, self.pid, self.scheduler_lock)
+                instruction = advance(instruction_iterator)
             elif instruction.command == 'OUT':
                 out(self, self.lock, self.pid)
+                instruction = advance(instruction_iterator)
+            elif instruction.command == 'CRITICAL BEGIN':
+                cs = tables.critical_sections[instruction.value]
+                if not cs.locked:
+                    cs.lock()
+                    cs.pid = self.pid
+                    self.has_cs = True
+                    self.is_waiting_for_cs = False
+                    instruction = advance(instruction_iterator)
+                    print(f'---CRITICAL SECTION (id: {cs.id}, pid {self.pid}) BEGIN---')
+                    self.lock.wait()
+                elif cs.locked:
+                    # print(f'Process {self.pid} waiting for lock {cs.id}')
+                    self.has_cs = False
+                    self.is_waiting_for_cs = True
+                    self.pcb.state = 'READY'
+                    continue_from(self.lock, self.pid, self.scheduler_lock)
+            elif instruction.command == 'CRITICAL END':
+                cs = tables.critical_sections[instruction.value]
+                if cs.locked and cs.pid == self.pid:
+                    cs.unlock()
+                    cs.pid = -1
+                    self.has_cs = False
+                    self.is_waiting_for_cs = False
+                    instruction = advance(instruction_iterator)
+                    print(f'----CRITICAL SECTION (id: {cs.id}, pid {self.pid})) END----')
+                    self.lock.wait
             else:
                 print(f'Invalid command: {instruction.command}')
+                instruction = advance(instruction_iterator)
                 self.lock.wait()
+        self.pcb.state = 'DONE'
         self.done = True
         print(f'---{self.pid}: DONE---')
 
@@ -39,3 +79,10 @@ class Process:
     def start(self):
         self.thread.start()
         self.started = True
+
+
+def advance(iterator):
+    try:
+        return next(iterator)
+    except StopIteration:
+        return None
