@@ -2,6 +2,7 @@ import time
 import random
 
 
+
 def calculate(count, delay, lock, pid):
     for i in range(count):
         print(f'{pid}-> CALCULATE: {i + 1}/{count}')
@@ -9,13 +10,15 @@ def calculate(count, delay, lock, pid):
         lock.wait()
 
 
-def io(lock, pid, dispatcher, scheduler_lock, pcb):
+def io(process, lock, pid, dispatcher, scheduler_lock, pcb):
+    process.sleeping = True
     value = random.randint(0, 10)
     print(f'{pid}-> I/O: waiting for {value} seconds')
-    if dispatcher is not None:
-        dispatcher.block()
+    if process.dispatcher is not None:
+        process.dispatcher.block()
     scheduler_lock.set()
     time.sleep(value)
+    process.sleeping = False
     if pcb is not None:
         pcb.state = 'READY'
     lock.wait()
@@ -41,3 +44,30 @@ def out(process, lock, pid):
     print(f'Instruction Count: {len(process.program.instructions)}')
     print(f'------------------------------')
     lock.wait()
+
+
+def critical_begin(process, cs, lock, i, instruction):
+    if not cs.locked:
+        cs.lock()
+        cs.pid = process.pid
+        instruction = advance(i)
+        print(f'---CRITICAL SECTION (id: {cs.id}, pid {process.pid}) BEGIN---')
+        lock.wait()
+    elif cs.locked:
+        print(f'Process {process.pid} waiting for lock {cs.id}')
+        continue_from(process.lock, process.pid, process.scheduler_lock)
+
+def critical_end(process, cs, lock, i, instruction):
+    if cs.locked and cs.pid == process.pid:
+        cs.unlock()
+        cs.pid = -1
+        instruction = advance(i)
+        print(f'----CRITICAL SECTION ({cs.id}, pid {process.pid})) END----')
+        process.lock.wait()
+
+
+def advance(iterator):
+    try:
+        return next(iterator)
+    except StopIteration:
+        return None
