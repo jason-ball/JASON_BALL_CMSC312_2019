@@ -1,9 +1,10 @@
 import threading
 import time
+import tables
 
 
 class Scheduler:
-    PCBs = None
+    PCBs = tables.PCBs
     PCBs_available = threading.Event()
     thread = None
     wait_lock = threading.Event()
@@ -13,19 +14,20 @@ class Scheduler:
 
     def run(self):
         self.PCBs_available.wait()
-        for pcb in self.PCBs:
+        for pcb in tables.PCBs:
             pcb.process.start()
             pcb.process.scheduler_lock = self.wait_lock
             pcb.process.dispatcher = self.dispatcher
             pcb.state = 'READY'
         while True:
             self.wait_lock.clear()
-            self.PCBs[:] = [pcb for pcb in self.PCBs if not pcb.process.done]
-            for pcb in self.PCBs:
+            # tables.PCBs[:] = [pcb for pcb in tables.PCBs if not pcb.process.done]
+            # for pcb in tables.PCBs:
+            for pcb in [pcb for pcb in tables.PCBs if not pcb.process.done]:
                 if pcb.state == 'READY':
                     self.dispatcher.switch(pcb)
                     self.wait_lock.wait(1)
-            if len(self.PCBs) == 0:
+            if len([pcb for pcb in tables.PCBs if not pcb.process.done]) == 0:
                 break
 
     def start(self):
