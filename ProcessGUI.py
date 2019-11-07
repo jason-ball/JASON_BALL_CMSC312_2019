@@ -31,6 +31,8 @@ class ProcessGUI:
                 self.labels[pcb.process.pid]['state'].configure(fg="blue")
             elif pcb.process.is_waiting_for_cs:
                 self.labels[pcb.process.pid]['state'].configure(fg="red")
+            elif pcb.state == 'DONE':
+                self.labels[pcb.process.pid]['state'].configure(fg="green")
             else:
                 self.labels[pcb.process.pid]['state'].configure(fg="black")
         self.window.after(100, self.update)
