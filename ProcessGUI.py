@@ -16,10 +16,10 @@ class ProcessGUI:
             cells['state'].grid(row=row, column=1, sticky=E)
             self.labels[pcb.process.pid] = cells
             row += 1
-        self.start_button = Button(self.window, text="START")
+        self.start_button = Button(self.window, text="Add new randomized process")
         self.start_button.grid(row=row, column=0, columnspan=2, sticky=W+E)
-            
-    
+
+
     def start(self):
         self.window.after(100, self.update)
         self.window.mainloop()
