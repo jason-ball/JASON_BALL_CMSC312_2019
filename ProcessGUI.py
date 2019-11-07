@@ -5,6 +5,7 @@ class ProcessGUI:
     def __init__(self):
         self.window = Tk()
         self.window.title('fakeOS: Processes')
+        self.window.resizable(False, False)
         self.labels = {}
         row = 0
         for pcb in tables.PCBs:
