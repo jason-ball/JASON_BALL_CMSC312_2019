@@ -16,8 +16,10 @@ class ProcessGUI:
             cells['state'].grid(row=row, column=1, sticky=E)
             self.labels[pcb.process.pid] = cells
             row += 1
-        self.start_button = Button(self.window, text="Add new randomized process")
-        self.start_button.grid(row=row, column=0, columnspan=2, sticky=W+E)
+        # self.start_button = Button(self.window, text="Add new randomized process")
+        # self.start_button.grid(row=row, column=0, columnspan=2, sticky=W+E)
+        self.memory_label = Label(self.window, text=f'Memory: {tables.memory}', font=('Arial', 16))
+        self.memory_label.grid(row=row, column=0, columnspan=2, sticky=W+E)
 
 
     def start(self):
@@ -35,4 +37,5 @@ class ProcessGUI:
                 self.labels[pcb.process.pid]['state'].configure(fg="green")
             else:
                 self.labels[pcb.process.pid]['state'].configure(fg="black")
+        self.memory_label.configure(text=f'Memory: {tables.memory}', font=('Arial', 16))
         self.window.after(100, self.update)
