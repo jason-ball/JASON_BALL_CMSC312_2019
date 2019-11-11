@@ -1,5 +1,6 @@
 import time
 import random
+import tables
 
 
 
@@ -12,7 +13,7 @@ def calculate(count, delay, lock, pid):
 
 def io(process, lock, pid, dispatcher, scheduler_lock, pcb):
     process.sleeping = True
-    value = random.randint(0, 10)
+    value = random.randint(1, 10)
     print(f'{pid}-> I/O: waiting for {value} seconds')
     if process.dispatcher is not None:
         process.dispatcher.block()
@@ -25,16 +26,19 @@ def io(process, lock, pid, dispatcher, scheduler_lock, pcb):
 
 
 def yield_from(lock, pid, scheduler_lock):
-    print(f'{pid}-> YIELD')
-    scheduler_lock.set()
-    # lock.clear()
-    lock.wait()
+    if len(tables.ready_pcbs) > 0:
+        print(f'{pid}-> YIELD')
+        scheduler_lock.set()
+        lock.clear()
+        lock.wait()
+    else:
+        print(f'{pid}-> YIELD IGNORED: NO MORE PROCESSES')
 
 
 def continue_from(lock, pid, scheduler_lock):
     # print(f'{pid}-> YIELD')
     scheduler_lock.set()
-    # lock.clear()
+    lock.clear()
     lock.wait()
 
 
