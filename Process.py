@@ -9,7 +9,7 @@ class Process:
     active = False
     started = False
     done = False
-    lock = None
+    lock: threading.Event = None
     dispatcher = None
     scheduler_lock = None
     pcb = None
@@ -50,7 +50,7 @@ class Process:
                     # print(f'Process {self.pid} waiting for lock {cs.id}')
                     self.has_cs = False
                     self.is_waiting_for_cs = True
-                    self.pcb.state = 'READY'
+                    self.pcb.state = 'WAIT'
                     continue_from(self.lock, self.pid, self.scheduler_lock)
             elif instruction.command == 'CRITICAL END':
                 cs = tables.critical_sections[instruction.value]
@@ -61,7 +61,7 @@ class Process:
                     self.is_waiting_for_cs = False
                     instruction = advance(instruction_iterator)
                     print(f'----CRITICAL SECTION (id: {cs.id}, pid {self.pid})) END----')
-                    self.lock.wait
+                    self.lock.wait()
             else:
                 print(f'Invalid command: {instruction.command}')
                 instruction = advance(instruction_iterator)
