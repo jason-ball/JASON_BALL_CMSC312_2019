@@ -24,6 +24,7 @@ def main():
         except FileNotFoundError:
             print("File not found!")
     program.number_of_processes = int(input("Number of processes: "))
+    tables.memory = int(input("Memory Size: "))
     instructions = []
     for line in file:
         if line == 'EXE':
@@ -88,14 +89,15 @@ def main():
 
     dispatcher = Dispatcher()
     scheduler = Scheduler(dispatcher)
+    dispatcher.connect_scheduler(scheduler)
     scheduler.start()
     tables.PCBs = pcbs
-    scheduler.PCBs_available.set()
+    scheduler.pcb_lock.set()
 
     gui = ProcessGUI()
     gui.start()
 
-    scheduler.thread.join()
+    scheduler.run_thread.join()
 
 if __name__ == '__main__':
     main()
