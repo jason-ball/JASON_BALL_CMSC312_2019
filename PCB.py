@@ -4,3 +4,4 @@ class PCB:
 
     def __init__(self, process):
         self.process = process
+        self.memory = process.program.memory
