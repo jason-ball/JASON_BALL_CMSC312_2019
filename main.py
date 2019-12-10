@@ -95,7 +95,7 @@ def main():
     scheduler.pcb_lock.set()
 
     gui = ProcessGUI()
-    gui.start()
+    # gui.start()
 
     scheduler.run_thread.join()
 

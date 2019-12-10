@@ -1,6 +1,8 @@
 import time
 import random
 import tables
+from copy import copy
+from PCB import PCB
 
 
 
@@ -68,6 +70,16 @@ def critical_end(process, cs, lock, i, instruction):
         instruction = advance(i)
         print(f'----CRITICAL SECTION ({cs.id}, pid {process.pid})) END----')
         process.lock.wait()
+
+
+def fork(process):
+    pid = process.pid + 0.1
+    print(f'{process.pid}-> Forking! Child PID: {pid}')
+    child = copy(process)
+    child.pid = pid
+    child_PCB = PCB(child)
+    tables.PCBs.append(child_PCB)
+    process.lock.wait()
 
 
 def advance(iterator):

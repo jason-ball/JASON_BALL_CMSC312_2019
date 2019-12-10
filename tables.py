@@ -5,7 +5,7 @@ from PCB import PCB
 cs = NewType("CriticalSection", CriticalSection)
 
 critical_sections = {}
-PCBs = List[PCB]
+PCBs = []
 ready_pcbs = deque()
 waiting_pcbs = deque()
 

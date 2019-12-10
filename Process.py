@@ -1,6 +1,6 @@
 import threading
 import time
-from commands import calculate, io, yield_from, out, continue_from
+from commands import calculate, io, yield_from, out, continue_from, fork
 import tables
 
 
@@ -16,6 +16,7 @@ class Process:
     has_cs = False
     is_waiting_for_cs = False
     sleeping = False
+    child = False
 
     def task(self):
         self.lock.wait()
@@ -35,6 +36,9 @@ class Process:
                 instruction = advance(instruction_iterator)
             elif instruction.command == 'OUT':
                 out(self, self.lock, self.pid)
+                instruction = advance(instruction_iterator)
+            elif instruction.command == 'FORK':
+                fork(self)
                 instruction = advance(instruction_iterator)
             elif instruction.command == 'CRITICAL BEGIN':
                 cs = tables.critical_sections[instruction.value]
